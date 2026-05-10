@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate, Link } from "react-router-dom"; // Thêm Link để điều hướng chi tiết
 import "../../assets/css/ProductList.css";
 
-// 1. Import tất cả các ảnh thực tế bạn đang có
+// 1. Import ảnh thực tế từ thư mục src/assets/images
 import p1Image from "../../assets/images/P1.jpg";
 import p2Image from "../../assets/images/P2.jpg";
 import p3Image from "../../assets/images/P7.jpg";
@@ -19,7 +20,7 @@ import p13Image from "../../assets/images/P19.jpg";
 import p14Image from "../../assets/images/P20.jpg";
 import p15Image from "../../assets/images/P21.webp";
 
-// 2. Tạo bảng ánh xạ (Mapping) để khớp tên file từ Database với biến Import
+// 2. Mapping ảnh (Khớp với cột Image trong Database)
 const imageMap = {
     "P1.jpg": p1Image,
     "P2.jpg": p2Image,
@@ -28,47 +29,68 @@ const imageMap = {
     "P10.jpg": p5Image,
     "P12.jpg": p6Image,
     "P8.jpg": p7Image,
-    "P9.webp": p9Image,
-    "p10.jpg": p10Image,
-    "p11.webp": p11Image,
-    "p12.jpg": p12Image,
-    "p13.jpg": p13Image,
-    "p14.jpg": p14Image,
-    "p15.webp": p15Image
+    "P15.webp": p8Image,
+    "OIP.webp": p9Image,
+    "P16.jpg": p10Image,
+    "P17.webp": p11Image,
+    "P18.jpg": p12Image,
+    "P19.jpg": p13Image,
+    "P20.jpg": p14Image,
+    "P21.webp": p15Image
 };
 
 export default function ProductList() {
     const [products, setProducts] = useState([]);
+    const navigate = useNavigate();
 
+    // Lấy danh sách sản phẩm từ API khi load trang
     useEffect(() => {
-        // Gọi API lấy danh sách sản phẩm
         axios.get("https://localhost:7259/api/Product") 
-            .then(res => {
-                console.log("Dữ liệu nhận được:", res.data);
-                setProducts(res.data);
-            })
-            .catch(err => {
-                console.error("Lỗi API:", err);
-            });
+            .then(res => setProducts(res.data))
+            .catch(err => console.error("Lỗi lấy sản phẩm:", err));
     }, []);
 
-    // Danh sách ảnh mặc định để dự phòng nếu Database để trống
+    // Hàm thêm vào giỏ hàng
+    const addToCart = async (product) => {
+        try {
+            const userData = JSON.parse(localStorage.getItem("user") || "{}");
+            const userId = userData.id || 1; 
+
+            const cartData = {
+                UserId: userId,
+                ProductId: product.id,
+                Quantity: 1
+            };
+
+            await axios.post("https://localhost:7259/api/Cart/add", cartData);
+            alert(`Đã thêm "${product.productName}" vào giỏ hàng thành công!`);
+        } catch (err) {
+            console.error("Lỗi thêm vào giỏ:", err);
+            alert("Không thể thêm vào giỏ hàng.");
+        }
+    };
+
     const fallbackImages = [p1Image, p2Image, p3Image, p4Image, p5Image, p6Image, p7Image, p8Image, p9Image, p10Image, p11Image, p12Image, p13Image, p14Image, p15Image];
 
     return (
         <div className="bvlgari-style">
+            {/* Navigation Bar */}
             <nav className="main-nav">
                 <div className="brand-center">
-                    <h1 className="logo">M V L D A R I</h1>
+                    <h1 className="logo" onClick={() => navigate("/")} style={{cursor: 'pointer'}}>
+                        M V L D A R I
+                    </h1>
                 </div>
                 <ul className="nav-menu">
                     <li>TRANG SỨC</li>
                     <li>ĐỒNG HỒ</li>
-                    <li>PHỤ KIỆN</li>
-                    <li>QUÀ TẶNG</li>
+                    <li onClick={() => navigate("/cart")} style={{fontWeight: 'bold', color: '#b68d40', cursor: 'pointer'}}>
+                        GIỎ HÀNG
+                    </li>
                 </ul>
             </nav>
 
+            {/* Hero Video Section */}
             <section className="video-hero">
                 <div className="video-wrapper">
                     <video autoPlay loop muted playsInline className="bg-video">
@@ -78,45 +100,59 @@ export default function ProductList() {
                 <div className="video-overlay">
                     <div className="overlay-content">
                         <h2 className="fade-in-text">INFINITE TRANSFORMATIONS</h2>
-                        <button className="btn-explore">KHÁM PHÁ NGAY</button>
+                        <button className="btn-explore">BỘ SƯU TẬP MỚI</button>
                     </div>
                 </div>
             </section>
 
+            {/* Product Grid */}
             <div className="product-listing">
                 <div className="listing-header">
-                    <h3>Bộ Sưu Tập Trang Sức Cao Cấp</h3>
+                    <h3>Trang Sức Biểu Tượng</h3>
                 </div>
                 
                 <div className="luxury-grid">
-                    {products.length > 0 ? products.map((p, index) => (
-                        <div key={p.id || index} className="item-card">
-                            <div className="item-img">
-                                <img 
-                                    src={
-                                        // Kiểm tra: Nếu p.image có tên file và tên đó tồn tại trong imageMap
-                                        p.image && imageMap[p.image] 
-                                            ? imageMap[p.image] 
-                                            : fallbackImages[index % fallbackImages.length]
-                                    } 
-                                    alt={p.productName} 
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = fallbackImages[index % fallbackImages.length];
-                                    }}
-                                />
+                    {products.length > 0 ? products.map((p, index) => {
+                        const currentId = p.id || p.Id; // Đảm bảo lấy đúng ID từ Database
+                        
+                        return (
+                            <div key={currentId || index} className="item-card">
+                                {/* Bọc Ảnh và Tên trong thẻ Link để xem chi tiết */}
+                                <Link 
+                                    to={`/product/${currentId}`} 
+                                    style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+                                >
+                                    <div className="item-img">
+                                        <img 
+                                            src={p.image && imageMap[p.image] ? imageMap[p.image] : fallbackImages[index % fallbackImages.length]} 
+                                            alt={p.productName} 
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = fallbackImages[0];
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="item-info">
+                                        <h4>{p.productName}</h4>
+                                    </div>
+                                </Link>
+
+                                {/* Phần giá và nút mua hàng để bên ngoài Link để tránh bị nhảy trang khi bấm nút */}
+                                <div className="item-info" style={{ marginTop: "0" }}>
+                                    <p className="item-price">
+                                        {Number(p.price || 0).toLocaleString('vi-VN')} ₫
+                                    </p>
+                                    <button 
+                                        className="btn-add-cart"
+                                        onClick={() => addToCart(p)}
+                                    >
+                                        THÊM VÀO GIỎ
+                                    </button>
+                                </div>
                             </div>
-                            <div className="item-info">
-                                <h4>{p.productName}</h4>
-                                <p className="item-price">
-                                    {Number(p.price || 0).toLocaleString('vi-VN')} đ
-                                </p>
-                            </div>
-                        </div>
-                    )) : (
-                        <p style={{ textAlign: 'center', width: '100%', gridColumn: '1/-1' }}>
-                            Đang kết nối đến kho trang sức...
-                        </p>
+                        );
+                    }) : (
+                        <div className="loading-state">Đang tải tuyệt tác trang sức...</div>
                     )}
                 </div>
             </div>
