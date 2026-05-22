@@ -1,31 +1,23 @@
-/* src/pages/Product/ProductList.css */
-
-/* src/pages/Product/ProductList.css */
-
 .bvlgari-style {
-    /* Quan trọng: Phải xóa hoặc đổi overflow: hidden thành visible */
-    overflow: visible !important; 
+    overflow: visible !important;
     font-family: 'Times New Roman', Times, serif;
     background-color: #ffffff;
     color: #1a1a1a;
-    position: relative; /* Đảm bảo context cho sticky */
+    position: relative;
 }
 
+/* ===== NAV ===== */
 .main-nav {
     padding: 20px 0;
     border-bottom: 1px solid #f0f0f0;
     background: white;
-    
-    /* Thiết lập sticky chuẩn */
-    position: -webkit-sticky; /* Hỗ trợ Safari */
+    position: -webkit-sticky;
     position: sticky;
     top: 0;
     left: 0;
     right: 0;
     width: 100%;
-    
-    /* Đảm bảo nằm trên cùng của tất cả các lớp (video, ảnh) */
-    z-index: 9999; 
+    z-index: 9999;
 }
 
 .logo {
@@ -55,7 +47,7 @@
     color: #d4af37;
 }
 
-/* 3. Hero Video Section */
+/* ===== HERO VIDEO ===== */
 .video-hero {
     position: relative;
     height: 80vh;
@@ -79,7 +71,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.2); /* Phủ lớp tối nhẹ để chữ nổi bật */
+    background: rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -116,7 +108,7 @@
     color: white;
 }
 
-/* 4. Product Listing */
+/* ===== PRODUCT LISTING (chung) ===== */
 .product-listing {
     padding: 80px 5%;
 }
@@ -135,6 +127,7 @@
     gap: 40px;
 }
 
+/* ===== ITEM CARD (chung) ===== */
 .item-card {
     transition: transform 0.4s ease;
     cursor: pointer;
@@ -167,11 +160,12 @@
 
 .item-info {
     text-align: center;
+    padding-bottom: 16px;
 }
 
 .item-info h4 {
     font-size: 1rem;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     letter-spacing: 1px;
     color: #333;
 }
@@ -180,16 +174,82 @@
     font-weight: bold;
     color: #b8860b;
     font-size: 1.1rem;
+    margin: 0;
 }
 
-/* Animations */
+/* ===== TRANG SỨC BIỂU TƯỢNG (override — style Bvlgari) ===== */
+.featured-section .luxury-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.featured-section .item-card {
+    background: transparent;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.featured-section .item-card:hover {
+    transform: translateY(-8px);
+}
+
+.featured-section .item-img {
+    height: 320px;
+    background: #ebebeb;
+    overflow: hidden;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+}
+
+.featured-section .item-img img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+    transition: transform 0.4s ease;
+}
+
+.featured-section .item-card:hover .item-img img {
+    transform: scale(1.06);
+}
+
+.featured-section .item-info h4 {
+    font-family: 'Times New Roman', serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+}
+
+.featured-section .item-price {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: #333;
+}
+
+/* ===== ANIMATIONS ===== */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    .featured-section .luxury-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .fade-in-text { font-size: 2rem; }
-    .nav-menu { display: none; } /* Ẩn menu trên mobile để dùng hamburger sau */
+    .nav-menu { display: none; }
+}
+
+@media (max-width: 480px) {
+    .featured-section .luxury-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
 }

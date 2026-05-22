@@ -3,15 +3,18 @@ import MainLayout from "../layouts/MainLayout";
 import AuthLayout from "../layouts/AuthLayout";
 
 import Login from "../pages/Auth/Login";
-import Register from "../pages/Auth/Register";
 import ProductList from "../pages/Product/ProductList";
+import ProductDetail from "../pages/Product/ProductDetail"; // 👉 THÊM
 import Cart from "../pages/Cart/Cart";
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-         <Route path="/" element={<Navigate to="/register" />} />
+
+        {/* Default */}
+        <Route path="/" element={<Navigate to="/login" />} />
+
         {/* Auth */}
         <Route path="/login" element={
           <AuthLayout>
@@ -19,11 +22,7 @@ export default function AppRoutes() {
           </AuthLayout>
         } />
 
-        <Route path="/register" element={
-          <AuthLayout>
-            <Register />
-          </AuthLayout>
-        } />
+        
 
         {/* Main */}
         <Route path="/products" element={
@@ -32,11 +31,19 @@ export default function AppRoutes() {
           </MainLayout>
         } />
 
+        {/* 👉 QUAN TRỌNG: TRANG CHI TIẾT */}
+        <Route path="/product/:id" element={
+          <MainLayout>
+            <ProductDetail />
+          </MainLayout>
+        } />
+
+        {/* Cart */}
         <Route path="/cart" element={
-  <MainLayout>
-    <Cart />
-  </MainLayout>
-} />
+          <MainLayout>
+            <Cart />
+          </MainLayout>
+        } />
 
       </Routes>
     </BrowserRouter>

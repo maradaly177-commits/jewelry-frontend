@@ -3,6 +3,9 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom"; // Thêm Link để điều hướng chi tiết
 import "../../assets/css/ProductList.css";
 
+// ... (giữ nguyên các phần import ảnh và imageMap bên trên)
+import ProductItem from "./ProductItem"; // Import component vừa tạo
+
 // 1. Import ảnh thực tế từ thư mục src/assets/images
 import p1Image from "../../assets/images/P1.jpg";
 import p2Image from "../../assets/images/P2.jpg";
@@ -43,27 +46,25 @@ export default function ProductList() {
     const [products, setProducts] = useState([]);
     const navigate = useNavigate();
 
-    // Lấy danh sách sản phẩm từ API khi load trang
     useEffect(() => {
-        axios.get("https://localhost:7259/api/Product") 
+        axios.get("https://localhost:7259/api/Product")
             .then(res => setProducts(res.data))
             .catch(err => console.error("Lỗi lấy sản phẩm:", err));
     }, []);
 
-    // Hàm thêm vào giỏ hàng
     const addToCart = async (product) => {
         try {
             const userData = JSON.parse(localStorage.getItem("user") || "{}");
-            const userId = userData.id || 1; 
+            const userId = userData.id || 1;
 
             const cartData = {
                 UserId: userId,
-                ProductId: product.id,
+                ProductId: product.id || product.Id,
                 Quantity: 1
             };
 
             await axios.post("https://localhost:7259/api/Cart/add", cartData);
-            alert(`Đã thêm "${product.productName}" vào giỏ hàng thành công!`);
+            alert(`Đã thêm "${product.productName}" thành công!`);
         } catch (err) {
             console.error("Lỗi thêm vào giỏ:", err);
             alert("Không thể thêm vào giỏ hàng.");
@@ -112,46 +113,18 @@ export default function ProductList() {
                 </div>
                 
                 <div className="luxury-grid">
-                    {products.length > 0 ? products.map((p, index) => {
-                        const currentId = p.id || p.Id; // Đảm bảo lấy đúng ID từ Database
-                        
-                        return (
-                            <div key={currentId || index} className="item-card">
-                                {/* Bọc Ảnh và Tên trong thẻ Link để xem chi tiết */}
-                                <Link 
-                                    to={`/product/${currentId}`} 
-                                    style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-                                >
-                                    <div className="item-img">
-                                        <img 
-                                            src={p.image && imageMap[p.image] ? imageMap[p.image] : fallbackImages[index % fallbackImages.length]} 
-                                            alt={p.productName} 
-                                            onError={(e) => {
-                                                e.target.onerror = null;
-                                                e.target.src = fallbackImages[0];
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="item-info">
-                                        <h4>{p.productName}</h4>
-                                    </div>
-                                </Link>
-
-                                {/* Phần giá và nút mua hàng để bên ngoài Link để tránh bị nhảy trang khi bấm nút */}
-                                <div className="item-info" style={{ marginTop: "0" }}>
-                                    <p className="item-price">
-                                        {Number(p.price || 0).toLocaleString('vi-VN')} ₫
-                                    </p>
-                                    <button 
-                                        className="btn-add-cart"
-                                        onClick={() => addToCart(p)}
-                                    >
-                                        THÊM VÀO GIỎ
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    }) : (
+                    {products.length > 0 ? (
+                        products.map((p, index) => (
+                            <ProductItem 
+                                key={p.productId}
+                                product={p}
+                                index={index}
+                                imageMap={imageMap}
+                                fallbackImages={fallbackImages}
+                                onAddToCart={addToCart}
+                            />
+                        ))
+                    ) : (
                         <div className="loading-state">Đang tải tuyệt tác trang sức...</div>
                     )}
                 </div>

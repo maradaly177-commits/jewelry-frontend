@@ -1,45 +1,61 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// Import Layout (Bắt buộc phải có dòng này thì mới dùng được <MainLayout>)
-import MainLayout from "./layouts/MainLayout"; 
+// Layout
+import MainLayout from "./layouts/MainLayout";
 
-// Import Pages
+// Pages
 import ProductList from "./pages/Product/ProductList";
-import Login from "./pages/Auth/Login";
-import Register from "./pages/Auth/Register";
-import Cart from "./pages/Cart/Cart"; // Kiểm tra lại đường dẫn import này cho đúng với cấu trúc thư mục
+import Login from "./pages/Auth/Login"
+import Cart from "./pages/Cart/Cart";
 import ProductDetail from "./pages/Product/ProductDetail";
+
 function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        {/* Mặc định vào register */}
-        <Route path="/" element={<Navigate to="/register" />} />
 
-        {/* Auth - Không dùng Layout chung */}
+        {/* Mặc định */}
+        <Route path="/" element={<Navigate to="/login" />} />
+
+        {/* Auth */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        
 
-        {/* Trang sản phẩm - Nên bọc trong MainLayout để có Menu/Header */}
-        <Route path="/products" element={
-          <MainLayout>
-            <ProductList />
-          </MainLayout>
-        } />
+        {/* Product List */}
+        <Route
+          path="/products"
+          element={
+            <MainLayout>
+              <ProductList />
+            </MainLayout>
+          }
+        />
 
-        {/* Trang giỏ hàng - Đã sửa lỗi thiếu Layout */}
-        <Route path="/cart" element={
-          <MainLayout>
-            <Cart />
-          </MainLayout>
-        } />
+        {/* Cart */}
+        <Route
+          path="/cart"
+          element={
+            <MainLayout>
+              <Cart />
+            </MainLayout>
+          }
+        />
 
-        <Route path="/product/:id" element={<ProductDetail />} />
+        {/* 🔥 Product Detail (QUAN TRỌNG) */}
+        <Route
+          path="/product/:id"
+          element={
+            <MainLayout>
+              <ProductDetail />
+            </MainLayout>
+          }
+        />
 
-        {/* Route dự phòng khi gõ sai URL */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/products" />} />
+
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
 

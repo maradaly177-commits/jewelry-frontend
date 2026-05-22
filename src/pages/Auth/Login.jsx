@@ -7,30 +7,26 @@ export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(""); // Thêm state để chứa lỗi
 
   const handleLogin = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
+    setError(""); // Xóa lỗi cũ trước khi thử đăng nhập mới
+
     try {
-      // 1. Sửa URL sang cổng 7259 (HTTPS) theo log backend
       const response = await axios.post("https://localhost:7259/api/User/Login", {
         Email: email,
         Password: password
       });
 
-      console.log("Dữ liệu User:", response.data);
-      
-      // Lưu thông tin đăng nhập vào LocalStorage nếu cần
-      // localStorage.setItem("user", JSON.stringify(response.data));
-
-      alert("Đăng nhập thành công!");
-      
-      // 2. Chuyển hướng đúng về trang danh sách sản phẩm
+      // Đăng nhập thành công: Lưu dữ liệu và chuyển trang ngay
+      localStorage.setItem("user", JSON.stringify(response.data));
       navigate("/products"); 
       
     } catch (error) {
-      console.error("Chi tiết lỗi:", error.response?.data);
-      // Nếu cổng 7259 lỗi, hãy thử kiểm tra lại endpoint trong Swagger
-      alert(error.response?.data?.message || "Sai tài khoản hoặc mật khẩu");
+      // Đăng nhập thất bại: Set lỗi vào state để hiển thị lên UI
+      console.error("Lỗi đăng nhập:", error);
+      setError("Sai tài khoản hoặc mật khẩu, vui lòng thử lại!");
     }
   };
 
@@ -40,6 +36,9 @@ export default function Login() {
         <div className="login-card"> 
           <h2>ĐĂNG NHẬP</h2>
           <p>Chào mừng bạn quay lại với Jewelry Shop</p>
+          
+          {/* HIỂN THỊ THÔNG BÁO LỖI MÀU ĐỎ */}
+          {error && <p style={{ color: "red", textAlign: "center", marginBottom: "10px" }}>{error}</p>}
           
           <form onSubmit={handleLogin}>
             <div className="input-group">
