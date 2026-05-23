@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 
 const ProductItem = ({ product, imageMap, fallbackImages, index }) => {
     // Lấy chính xác productId (Guid) từ object product nhận được từ API
-    const currentId = product.productId;
+    // Dùng toán tử || để lấy ID theo thứ tự ưu tiên
+const currentId = product.productId || product.id || product.Id;
+
+// Thêm cảnh báo nếu không tìm thấy ID
+if (!currentId) {
+    console.warn("Sản phẩm này không có ID:", product);
+}
 
     return (
         <div className="item-card">

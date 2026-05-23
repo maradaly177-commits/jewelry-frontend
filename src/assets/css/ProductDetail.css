@@ -1,0 +1,94 @@
+/* ProductDetail.css */
+.bvlgari-detail-container {
+    background-color: #ffffff;
+    color: #1a1a1a;
+    font-family: 'Times New Roman', serif;
+    padding: 80px 10%; /* Tăng padding để tạo không gian thở */
+    min-height: 100vh;
+}
+
+.luxury-grid-detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 100px; /* Tăng khoảng cách giữa ảnh và chữ */
+    align-items: start; /* Căn lề trên để nội dung chữ không bị quá thấp */
+}
+
+.product-image-large img {
+    /* Tăng max-width để ảnh to hơn, lấp đầy không gian khung hình */
+    max-width: 90%; 
+    
+    /* Đảm bảo ảnh luôn giữ tỉ lệ gốc và hiển thị trọn vẹn */
+    object-fit: contain;
+    
+    /* Hiệu ứng chuyển động mượt mà */
+    transition: transform 0.5s ease;
+}
+
+/* Tinh chỉnh lại container để ảnh căn giữa hoàn hảo */
+.product-image-large {
+    width: 100%;
+    height: 600px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Giữ đường viền mảnh để tạo nét thanh lịch */
+    border: 1px solid #f0f0f0; 
+}
+
+/* Định dạng typography sang trọng */
+.product-info-detail h2 {
+    font-size: 2.8rem;
+    font-weight: 300;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.product-price-detail {
+    font-size: 1.6rem;
+    color: #8c734b; /* Màu vàng kim loại trầm hơn, sang hơn */
+    margin-bottom: 10px;
+    font-weight: 400;
+}
+
+.tax-note {
+    font-size: 0.9rem;
+    color: #999;
+    margin-bottom: 30px;
+}
+
+/* Nút bấm sang trọng - Màu Vàng Đồng (Gold) */
+.btn-add-to-bag {
+    width: 100%;
+    padding: 22px;
+    /* Mã màu vàng kim loại trầm, sang trọng */
+    background-color: #a68955; 
+    color: #ffffff;
+    border: 1px solid #a68955;
+    letter-spacing: 3px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.4s ease;
+}
+
+/* Hiệu ứng khi di chuột vào - Làm màu sáng lên một chút hoặc tối đi */
+.btn-add-to-bag:hover {
+    background-color: #8c734b; /* Màu tối hơn một chút khi hover */
+    border-color: #8c734b;
+    color: #fff;
+}
+
+/* Nút phụ - Để bổ sung vào JSX */
+.btn-secondary {
+    width: 100%;
+    padding: 20px;
+    margin-top: 15px;
+    background: transparent;
+    border: 1px solid #ccc;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+}

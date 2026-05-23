@@ -41,15 +41,15 @@ function App() {
           }
         />
 
-        {/* 🔥 Product Detail (QUAN TRỌNG) */}
-        <Route
-          path="/product/:id"
-          element={
-            <MainLayout>
-              <ProductDetail />
-            </MainLayout>
-          }
-        />
+        {/* 🔥 Product Detail */}
+<Route
+  path="/product/:id"
+  element={
+    <MainLayout hideNavbar={true}>
+      <ProductDetail />
+    </MainLayout>
+  }
+/>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/products" />} />
