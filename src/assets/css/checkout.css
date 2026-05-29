@@ -1,0 +1,54 @@
+.checkout-container {
+  max-width: 520px;
+  margin: 60px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.checkout-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #222;
+  text-align: center;
+}
+
+.checkout-input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.checkout-input:focus {
+  border-color: #ff4d2d;
+  box-shadow: 0 0 0 2px rgba(255,77,45,0.15);
+}
+
+.checkout-btn {
+  width: 100%;
+  padding: 14px;
+  background: #ff4d2d;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.checkout-btn:hover {
+  background: #e63e22;
+}
+
+.checkout-btn:active {
+  transform: scale(0.98);
+}

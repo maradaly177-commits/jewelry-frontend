@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../assets/css/ProductDetail.css';
 
 export default function ProductDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
 
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // 🔥 LẤY PRODUCT
+    // =========================
+    // LOAD PRODUCT
+    // =========================
     useEffect(() => {
         const fetchProduct = async () => {
             try {
@@ -31,51 +34,71 @@ export default function ProductDetail() {
         if (id) fetchProduct();
     }, [id]);
 
-    // 🔥 ADD TO CART
+    // =========================
+    // SAFE PRICE (FIX 0$)
+    // =========================
+    const price =
+        product?.unitPrice ??
+        product?.UnitPrice ??
+        product?.price ??
+        product?.Price ??
+        0;
+
+    // =========================
+    // ADD TO CART
+    // =========================
     const handleAddToCart = async () => {
         try {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+
             await axios.post("https://localhost:7259/api/Cart/add", {
-                userId: 1, // tạm thời hardcode
-                productId: product.id, // 🔥 QUAN TRỌNG: dùng id (int)
+                userId: user?.id || 1,
+                productId: product?.id || product?.Id,
                 quantity: 1
             });
 
-            alert(`Đã thêm "${product.productName}" vào giỏ hàng!`);
+            navigate("/cart");
+
         } catch (error) {
             console.error("Lỗi thêm giỏ:", error);
             alert("Thêm giỏ hàng thất bại!");
         }
     };
 
-    // 🔄 LOADING
+    // =========================
+    // LOADING
+    // =========================
     if (loading) return <div>Đang tải...</div>;
-
-    // ❌ KHÔNG TÌM THẤY
     if (!product) return <div>Không tìm thấy sản phẩm!</div>;
 
     return (
         <div className="bvlgari-detail-container">
             <div className="luxury-grid-detail">
 
-                {/* 🖼️ ẢNH */}
+                {/* IMAGE */}
                 <div className="product-image-large">
                     <img
-                        src={`/images/${product.image}`}
+                        src={
+                            product.image
+                                ? `/images/${product.image}`
+                                : "/images/default.jpg"
+                        }
                         alt={product.productName}
                         onError={(e) => {
-                            e.target.src = '/images/default.jpg';
+                            e.target.src = "/images/default.jpg";
                         }}
                     />
                 </div>
 
-                {/* 📄 INFO */}
+                {/* INFO */}
                 <div className="product-info-detail">
                     <p className="category-label">Jewelry / Rings</p>
 
                     <h2>{product.productName}</h2>
 
+                    {/* FIX PRICE */}
                     <p className="product-price-detail">
-                        {Number(product.price || 0).toLocaleString()} $
+                        {Number(price).toLocaleString("vi-VN")} ₫
                     </p>
 
                     <p className="tax-note">Excluding Taxes</p>
@@ -84,7 +107,7 @@ export default function ProductDetail() {
                         {product.description}
                     </p>
 
-                    {/* 🔥 BUTTON */}
+                    {/* BUTTON */}
                     <div className="action-area" style={{ margin: '30px 0' }}>
                         <button
                             className="btn-add-to-bag"
