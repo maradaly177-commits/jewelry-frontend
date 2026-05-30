@@ -6,7 +6,7 @@ export default function OrderDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [order, setOrder] = useState(null);
+    const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -15,79 +15,227 @@ export default function OrderDetail() {
                 setLoading(true);
 
                 const res = await axios.get(
-                    `https://localhost:7259/api/orders/${id}`
+                    `https://localhost:7259/api/Order/${id}`
                 );
 
-                // 👉 hỗ trợ cả 2 kiểu backend trả về
-                setOrder(res.data || null);
-
+                setItems(res.data || []);
             } catch (err) {
                 console.error(err);
-                setOrder(null);
+                setItems([]);
             } finally {
                 setLoading(false);
             }
         };
 
-        if (id) fetchData();
+        fetchData();
     }, [id]);
 
-    // LOADING
     if (loading) {
-        return <div style={{ padding: 20 }}>⏳ Đang tải đơn hàng...</div>;
+        return (
+            <div style={{ padding: 20 }}>
+                ⏳ Đang tải đơn hàng...
+            </div>
+        );
     }
 
-    // EMPTY
-    if (!order || !order.items || order.items.length === 0) {
+    if (items.length === 0) {
         return (
             <div style={{ padding: 20 }}>
                 <h2>📦 Chi tiết đơn hàng #{id}</h2>
+
                 <p>Không có sản phẩm trong đơn hàng</p>
 
-                <button onClick={() => navigate("/products")}>
+                <button
+                    onClick={() =>
+                        navigate("/products")
+                    }
+                >
                     Tiếp tục mua sắm
                 </button>
             </div>
         );
     }
 
+    const subtotal = items.reduce(
+        (sum, item) =>
+            sum +
+            (item.price || 0) *
+                (item.quantity || 0),
+        0
+    );
+
+    const shippingFee = 30000;
+
+    const total =
+        subtotal + shippingFee;
+
     return (
-        <div style={{ padding: 20 }}>
-            {/* HEADER ORDER */}
-            <h2>📦 Đơn hàng #{order.orderId || id}</h2>
+        <div
+            style={{
+                maxWidth: 900,
+                margin: "30px auto",
+                padding: 20
+            }}
+        >
+            <h2
+                style={{
+                    marginBottom: 25
+                }}
+            >
+                📦 Chi tiết đơn hàng #{id}
+            </h2>
 
-            <p>📌 Trạng thái: {order.status || "PENDING"}</p>
-            <p>💰 Tổng tiền: {Number(order.totalAmount || 0).toLocaleString("vi-VN")} ₫</p>
-
-            <hr />
-
-            {/* ITEMS */}
-            {order.items.map((item, index) => (
+            {items.map((item, index) => (
                 <div
-                    key={item.productId || index}
+                    key={index}
                     style={{
+                        display: "flex",
+                        gap: 20,
                         border: "1px solid #eee",
+                        borderRadius: 12,
                         padding: 15,
-                        marginBottom: 10,
-                        borderRadius: 8
+                        marginBottom: 15,
+                        background: "#fff",
+                        boxShadow:
+                            "0 2px 8px rgba(0,0,0,0.05)"
                     }}
                 >
-                    <p><b>{item.productName}</b></p>
+                    <img
+                        src={
+                            item.image
+                                ? `/images/${item.image}`
+                                : "https://via.placeholder.com/120"
+                        }
+                        alt={
+                            item.productName
+                        }
+                        style={{
+                            width: 120,
+                            height: 120,
+                            objectFit:
+                                "cover",
+                            borderRadius: 8
+                        }}
+                    />
 
-                    <p>Số lượng: {item.quantity}</p>
+                    <div
+                        style={{
+                            flex: 1
+                        }}
+                    >
+                        <h4
+                            style={{
+                                marginTop: 0
+                            }}
+                        >
+                            {
+                                item.productName
+                            }
+                        </h4>
 
-                    <p>
-                        Giá: {Number(item.price || 0).toLocaleString("vi-VN")} ₫
-                    </p>
+                        <p>
+                            🛍 Số lượng:{" "}
+                            <b>
+                                {
+                                    item.quantity
+                                }
+                            </b>
+                        </p>
 
-                    <p>
-                        Thành tiền:{" "}
-                        {Number(
-                            (item.price || 0) * (item.quantity || 0)
-                        ).toLocaleString("vi-VN")} ₫
-                    </p>
+                        <p>
+                            💵 Đơn giá:{" "}
+                            <b>
+                                {Number(
+                                    item.price
+                                ).toLocaleString(
+                                    "vi-VN"
+                                )}
+                                ₫
+                            </b>
+                        </p>
+
+                        <p>
+                            💰 Thành tiền:{" "}
+                            <b>
+                                {Number(
+                                    item.price *
+                                        item.quantity
+                                ).toLocaleString(
+                                    "vi-VN"
+                                )}
+                                ₫
+                            </b>
+                        </p>
+                    </div>
                 </div>
             ))}
+
+            <div
+                style={{
+                    borderTop:
+                        "2px solid #eee",
+                    marginTop: 20,
+                    paddingTop: 20,
+                    textAlign: "right"
+                }}
+            >
+                <p>
+                    Tạm tính:
+                    <b>
+                        {" "}
+                        {subtotal.toLocaleString(
+                            "vi-VN"
+                        )}
+                        ₫
+                    </b>
+                </p>
+
+                <p>
+                    Phí vận chuyển:
+                    <b>
+                        {" "}
+                        {shippingFee.toLocaleString(
+                            "vi-VN"
+                        )}
+                        ₫
+                    </b>
+                </p>
+
+                <h2>
+                    Tổng cộng:
+                    <span
+                        style={{
+                            marginLeft: 10,
+                            color:
+                                "#e53935"
+                        }}
+                    >
+                        {total.toLocaleString(
+                            "vi-VN"
+                        )}
+                        ₫
+                    </span>
+                </h2>
+            </div>
+
+            <button
+                onClick={() =>
+                    navigate("/orders")
+                }
+                style={{
+                    marginTop: 20,
+                    padding:
+                        "10px 20px",
+                    border: "none",
+                    background:
+                        "#000",
+                    color: "#fff",
+                    borderRadius: 8,
+                    cursor: "pointer"
+                }}
+            >
+                Quay lại đơn hàng
+            </button>
         </div>
     );
 }
