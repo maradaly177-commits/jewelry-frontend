@@ -24,23 +24,33 @@ function App() {
       <BrowserRouter>
         <Routes>
 
-          {/* Default */}
-          <Route path="/" element={<Navigate to="/login" />} />
+          {/* ================= DEFAULT ================= */}
+          <Route path="/" element={<Navigate to="/products" />} />
 
-          {/* Login */}
+          {/* ================= LOGIN ================= */}
           <Route path="/login" element={<Login />} />
 
-          {/* Products */}
-          <Route
-            path="/products"
-            element={
-              <MainLayout>
-                <ProductList />
-              </MainLayout>
-            }
-          />
+          {/* ================= PRODUCTS (ALL) ================= */}
+         <Route
+  path="/products"
+  element={
+    <MainLayout>
+      <ProductList key="all" />
+    </MainLayout>
+  }
+/>
 
-          {/* Product Detail */}
+          {/* ================= CATEGORY PRODUCTS ================= */}
+          <Route
+  path="/products/:category"
+  element={
+    <MainLayout>
+      <ProductList key="category" />
+    </MainLayout>
+  }
+/>
+
+          {/* ================= PRODUCT DETAIL ================= */}
           <Route
             path="/product/:id"
             element={
@@ -50,7 +60,7 @@ function App() {
             }
           />
 
-          {/* Cart */}
+          {/* ================= CART ================= */}
           <Route
             path="/cart"
             element={
@@ -60,7 +70,7 @@ function App() {
             }
           />
 
-          {/* Checkout */}
+          {/* ================= CHECKOUT ================= */}
           <Route
             path="/checkout"
             element={
@@ -70,7 +80,7 @@ function App() {
             }
           />
 
-          {/* Order Success */}
+          {/* ================= ORDER SUCCESS ================= */}
           <Route
             path="/order-success/:orderId"
             element={
@@ -80,10 +90,27 @@ function App() {
             }
           />
 
-          {/* Fallback */}
+          {/* ================= ORDERS ================= */}
+          <Route
+            path="/orders"
+            element={
+              <MainLayout>
+                <OrderList />
+              </MainLayout>
+            }
+          />
+
+          <Route
+            path="/orders/:id"
+            element={
+              <MainLayout>
+                <OrderDetail />
+              </MainLayout>
+            }
+          />
+
+          {/* ================= FALLBACK ================= */}
           <Route path="*" element={<Navigate to="/products" />} />
-          <Route path="/orders" element={<OrderList />} />
-          <Route path="/orders/:id" element={<OrderDetail />} />
 
         </Routes>
       </BrowserRouter>

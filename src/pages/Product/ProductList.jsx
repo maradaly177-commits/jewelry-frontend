@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import "../../assets/css/ProductList.css";
 
 import ProductItem from "./ProductItem";
@@ -24,6 +25,21 @@ import p13Image from "../../assets/images/P19.jpg";
 import p14Image from "../../assets/images/P20.jpg";
 import p15Image from "../../assets/images/P21.webp";
 
+import p16Image from "../../assets/images/watch1.webp";
+import p17Image from "../../assets/images/watch2.webp";
+import p18Image from "../../assets/images/watch3.jpg";
+import p19Image from "../../assets/images/watch3.webp";
+import p20Image from "../../assets/images/watch4.webp";
+import p21Image from "../../assets/images/watch5.jpg";
+import p22Image from "../../assets/images/watch5.webp";
+import p23Image from "../../assets/images/watch6.jpg";
+import p24Image from "../../assets/images/watch7.jpg";
+import p25Image from "../../assets/images/watch8.webp";
+import p26Image from "../../assets/images/watch9.jpg";
+import p27Image from "../../assets/images/watch10.webp";
+import p28Image from "../../assets/images/watch11.webp";
+import p29Image from "../../assets/images/watch12.jpg";
+import p30Image from "../../assets/images/watch13.jpg";
 // =========================
 // IMAGE MAP
 // =========================
@@ -37,17 +53,32 @@ const imageMap = {
     "P8.jpg": p7Image,
     "P15.webp": p8Image,
     "OIP.webp": p9Image,
-    "P16.jpg": p10Image,
-    "P17.webp": p11Image,
-    "P18.jpg": p12Image,
-    "P19.jpg": p13Image,
-    "P20.jpg": p14Image,
-    "P21.webp": p15Image
+    "watch1.webp": p16Image,
+    "watch2.webp": p17Image,
+    "watch3.jpg": p18Image,
+    "watch3.webp": p19Image,
+    "watch4.webp": p20Image,
+    "watch5.jpg": p21Image,
+    "watch5.webp": p22Image,
+    "watch6.jpg": p23Image,
+    "watch7.jpg": p24Image,
+    "watch8.webp": p25Image,
+    "watch9.jpg": p26Image,
+    "watch10.webp": p27Image,
+    "watch11.webp": p28Image,
+    "watch12.jpg": p29Image,
+    "watch13.jpg": p30Image,
+
+
+
 };
 
 export default function ProductList() {
 
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const category = searchParams.get("category");
+    
 
     // =========================
     // STATE
@@ -61,20 +92,33 @@ export default function ProductList() {
     const fallbackImages = [
         p1Image, p2Image, p3Image, p4Image, p5Image,
         p6Image, p7Image, p8Image, p9Image, p10Image,
-        p11Image, p12Image, p13Image, p14Image, p15Image
+        p11Image, p12Image, p13Image, p14Image, p15Image, p16Image, p17Image, p18Image, p19Image, p20Image, p21Image, p22Image, p23Image, p24Image, p25Image, p26Image, p27Image, p28Image, p29Image, p30Image
     ];
 
     // =========================
     // LOAD PRODUCTS
     // =========================
     useEffect(() => {
-        axios.get("https://localhost:7259/api/Product")
-            .then(res => {
-                const list = res.data?.data?.data || [];
-                setProducts(Array.isArray(list) ? list : []);
-            })
-            .catch(err => console.error("LOAD PRODUCT ERROR:", err));
-    }, []);
+
+    const categoryKey = (category || "").trim().toLowerCase();
+
+    let url = "https://localhost:7259/api/Product";
+
+    if (categoryKey) {
+        url = `https://localhost:7259/api/Product/filter?category=${categoryKey}`;
+    }
+
+    axios.get(url)
+        .then(res => {
+            console.log("API DATA:", res.data);
+
+            const list = res.data?.data || [];
+
+            setProducts(Array.isArray(list) ? list : []);
+        })
+        .catch(err => console.error(err));
+
+}, [category]);
 
     // =========================
     // FILTER + SEARCH + SORT
@@ -196,13 +240,21 @@ export default function ProductList() {
 
                 </div>
 
-                <ul className="nav-menu">
-                    <li>TRANG SỨC</li>
-                    <li>ĐỒNG HỒ</li>
-                    <li onClick={() => navigate("/cart")}>
-                        GIỎ HÀNG
-                    </li>
-                </ul>
+              <ul className="nav-menu">
+
+    <li onClick={() => navigate("/products?category=jewelry")}>
+        TRANG SỨC
+    </li>
+
+    <li onClick={() => navigate("/products?category=watch")}>
+        ĐỒNG HỒ
+    </li>
+
+    <li onClick={() => navigate("/cart")}>
+        GIỎ HÀNG
+    </li>
+
+</ul>
 
             </nav>
 

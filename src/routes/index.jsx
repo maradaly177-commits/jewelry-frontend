@@ -9,18 +9,18 @@ import ProductDetail from "../pages/Product/ProductDetail";
 import Cart from "../pages/Cart/Cart";
 import Checkout from "../pages/Checkout/Checkout";
 import OrderSuccess from "../pages/OrderSuccess/OrderSuccess";
-import OrderList from "./pages/Orders/OrderList";
-import OrderDetail from "./pages/Orders/OrderDetail";
+import OrderList from "../pages/Orders/OrderList";
+import OrderDetail from "../pages/Orders/OrderDetail";
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Default */}
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* ================= DEFAULT ================= */}
+        <Route path="/" element={<Navigate to="/products" />} />
 
-        {/* Auth */}
+        {/* ================= AUTH ================= */}
         <Route
           path="/login"
           element={
@@ -30,17 +30,26 @@ export default function AppRoutes() {
           }
         />
 
-        {/* Products */}
+        {/* ================= PRODUCTS (ALL + CATEGORY) ================= */}
         <Route
-          path="/products"
-          element={
-            <MainLayout>
-              <ProductList />
-            </MainLayout>
-          }
-        />
+  path="/products"
+  element={
+    <MainLayout>
+      <ProductList key="all" />
+    </MainLayout>
+  }
+/>
 
-        {/* Detail */}
+       <Route
+  path="/products/:category"
+  element={
+    <MainLayout>
+      <ProductList key="category" />
+    </MainLayout>
+  }
+/>
+
+        {/* ================= PRODUCT DETAIL ================= */}
         <Route
           path="/product/:id"
           element={
@@ -50,7 +59,7 @@ export default function AppRoutes() {
           }
         />
 
-        {/* Cart */}
+        {/* ================= CART ================= */}
         <Route
           path="/cart"
           element={
@@ -60,7 +69,7 @@ export default function AppRoutes() {
           }
         />
 
-        {/* Checkout */}
+        {/* ================= CHECKOUT ================= */}
         <Route
           path="/checkout"
           element={
@@ -70,7 +79,7 @@ export default function AppRoutes() {
           }
         />
 
-        {/* ✅ FIX: Order Success có layout */}
+        {/* ================= ORDER SUCCESS ================= */}
         <Route
           path="/order-success/:orderId"
           element={
@@ -80,10 +89,27 @@ export default function AppRoutes() {
           }
         />
 
-        {/* Fallback */}
+        {/* ================= ORDERS ================= */}
+        <Route
+          path="/orders"
+          element={
+            <MainLayout>
+              <OrderList />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/orders/:id"
+          element={
+            <MainLayout>
+              <OrderDetail />
+            </MainLayout>
+          }
+        />
+
+        {/* ================= FALLBACK ================= */}
         <Route path="*" element={<Navigate to="/products" />} />
-        <Route path="/orders" element={<OrderList />} />
-        <Route path="/orders/:id" element={<OrderDetail />} />
 
       </Routes>
     </BrowserRouter>
