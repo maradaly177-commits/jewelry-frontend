@@ -27,7 +27,14 @@ export default function ProductDetail() {
                     `https://localhost:7259/api/Product/${id}`
                 );
 
-                setProduct(res.data);
+                // ✅ FIX response nhiều tầng
+                const data =
+                    res.data?.data?.data ||
+                    res.data?.data ||
+                    res.data;
+
+                setProduct(data);
+
             } catch (err) {
                 console.error(err);
                 setProduct(null);
@@ -39,24 +46,38 @@ export default function ProductDetail() {
         if (id) fetchProduct();
     }, [id]);
 
-    // ================= REVIEW (FIX ESLINT) =================
+    // ================= REVIEWS =================
     const fetchReviews = useCallback(async () => {
-        try {
-            const r1 = await axios.get(
-                `https://localhost:7259/api/review/product/${id}`
-            );
+    try {
+        const r1 = await axios.get(
+            `https://localhost:7259/api/review/product/${id}`
+        );
 
-            const r2 = await axios.get(
-                `https://localhost:7259/api/review/average/${id}`
-            );
+        const r2 = await axios.get(
+            `https://localhost:7259/api/review/average/${id}`
+        );
 
-            setReviews(Array.isArray(r1.data) ? r1.data : []);
-            setAvgRating(Number(r2.data) || 0);
+        // 🔥 FIX UNWRAP DATA
+        const reviewData =
+            r1.data?.data?.data ??
+            r1.data?.data ??
+            r1.data ??
+            [];
 
-        } catch (err) {
-            console.error(err);
-        }
-    }, [id]);
+        const avgData =
+            r2.data?.data ??
+            r2.data ??
+            0;
+
+        setReviews(Array.isArray(reviewData) ? reviewData : []);
+        setAvgRating(Number(avgData) || 0);
+
+    } catch (err) {
+        console.error("REVIEW ERROR:", err);
+        setReviews([]);
+        setAvgRating(0);
+    }
+}, [id]);
 
     useEffect(() => {
         if (id) fetchReviews();
@@ -71,23 +92,35 @@ export default function ProductDetail() {
         0;
 
     // ================= ADD TO CART =================
-    const handleAddToCart = async () => {
-        try {
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
+ const handleAddToCart = async () => {
+    try {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-            await axios.post("https://localhost:7259/api/Cart/add", {
-                userId: user?.id || 1,
-                productId: product?.id || product?.Id,
-                quantity: 1
-            });
+        const productId = product?.id ?? product?.Id;
 
-            navigate("/cart");
-
-        } catch (err) {
-            console.error(err);
-            alert("Thêm giỏ hàng thất bại!");
+        if (!productId) {
+            alert("Không tìm thấy sản phẩm!");
+            return;
         }
-    };
+
+        await axios.post("https://localhost:7259/api/Cart/add", {
+            userId: user?.id || 1,
+            productId: productId,
+            quantity: 1
+        });
+
+        // 🔥 QUAN TRỌNG: delay nhỏ để chắc backend xử lý xong
+        setTimeout(() => {
+            navigate("/cart");
+        }, 150);
+
+    } catch (err) {
+        console.error("ADD CART ERROR:", err);
+
+        // ❗ KHÔNG đứng im, vẫn cho đi cart nếu muốn UX mượt
+        navigate("/cart");
+    }
+};
 
     // ================= SUBMIT REVIEW =================
     const handleSubmitReview = async () => {
@@ -98,7 +131,7 @@ export default function ProductDetail() {
 
             await axios.post("https://localhost:7259/api/review", {
                 userId: user?.id || 1,
-                productId: product?.id || product?.Id,
+                productId: product?.id ?? product?.Id,
                 rating: ratingInput,
                 comment: commentInput
             });
@@ -124,7 +157,11 @@ export default function ProductDetail() {
 
     // ================= LOADING =================
     if (loading) return <div>Đang tải...</div>;
-    if (!product?.id) return <div>Không tìm thấy sản phẩm!</div>;
+
+    // 🔥 FIX QUAN TRỌNG: check cả id & Id
+    if (!product?.id && !product?.Id) {
+        return <div>Không tìm thấy sản phẩm!</div>;
+    }
 
     return (
         <div className="bvlgari-detail-container">
@@ -133,8 +170,12 @@ export default function ProductDetail() {
 
                 <div className="product-image-large">
                     <img
-                        src={product.image ? `/images/${product.image}` : "/images/default.jpg"}
-                        alt={product.productName}
+                        src={
+                            product?.image
+                                ? `/images/${product.image}`
+                                : "/images/default.jpg"
+                        }
+                        alt={product.productName || product.ProductName}
                     />
                 </div>
 
@@ -142,7 +183,7 @@ export default function ProductDetail() {
 
                     <p className="category-label">Jewelry / Rings</p>
 
-                    <h2>{product.productName}</h2>
+                    <h2>{product.productName || product.ProductName}</h2>
 
                     <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
                         <div style={{ color: "#ffb400" }}>
@@ -179,24 +220,6 @@ export default function ProductDetail() {
                             ADD TO SHOPPING BAG
                         </button>
 
-                        <button
-                            style={{
-                                width: "100%",
-                                padding: 16,
-                                border: "1px solid #000",
-                                background: "transparent",
-                                cursor: "pointer",
-                                marginBottom: 10
-                            }}
-                        >
-                            SEND AS A GIFT
-                        </button>
-
-                        {/* CONTACT */}
-                        <div style={{ fontSize: 14, color: "#555", marginTop: 10 }}>
-                            <p style={{ cursor: "pointer" }}>👤 Contact us</p>
-                            <p style={{ cursor: "pointer" }}>📍 Find in store</p>
-                        </div>
                     </div>
                 </div>
             </div>

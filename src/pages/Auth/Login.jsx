@@ -1,45 +1,63 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/Login.css"; 
+import "../../assets/css/Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // Thêm state để chứa lỗi
+  const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Xóa lỗi cũ trước khi thử đăng nhập mới
+    setError("");
 
     try {
-      const response = await axios.post("https://localhost:7259/api/User/Login", {
-        Email: email,
-        Password: password
-      });
+      const res = await axios.post(
+        "https://localhost:7259/api/User/Login",
+        {
+          Email: email,
+          Password: password
+        }
+      );
 
-      // Đăng nhập thành công: Lưu dữ liệu và chuyển trang ngay
-      localStorage.setItem("user", JSON.stringify(response.data));
-      navigate("/products"); 
-      
-    } catch (error) {
-      // Đăng nhập thất bại: Set lỗi vào state để hiển thị lên UI
-      console.error("Lỗi đăng nhập:", error);
+      console.log("LOGIN RESPONSE:", res.data);
+
+      // ✅ LẤY ĐÚNG USER
+      const user = res.data?.data?.user;
+      const token = res.data?.data?.token;
+
+      if (!user) {
+        setError("Login fail: không có user trả về");
+        return;
+      }
+
+      // ✅ LƯU ĐÚNG FORMAT
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+
+      navigate("/products");
+
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
       setError("Sai tài khoản hoặc mật khẩu, vui lòng thử lại!");
     }
   };
 
   return (
-    <div className="login-page"> 
+    <div className="login-page">
       <div className="login-container">
-        <div className="login-card"> 
+        <div className="login-card">
           <h2>ĐĂNG NHẬP</h2>
           <p>Chào mừng bạn quay lại với Jewelry Shop</p>
-          
-          {/* HIỂN THỊ THÔNG BÁO LỖI MÀU ĐỎ */}
-          {error && <p style={{ color: "red", textAlign: "center", marginBottom: "10px" }}>{error}</p>}
-          
+
+          {error && (
+            <p style={{ color: "red", textAlign: "center" }}>
+              {error}
+            </p>
+          )}
+
           <form onSubmit={handleLogin}>
             <div className="input-group">
               <input
@@ -61,11 +79,16 @@ export default function Login() {
               />
             </div>
 
-            <button type="submit" className="btn-login">Đăng nhập</button>
+            <button type="submit" className="btn-login">
+              Đăng nhập
+            </button>
           </form>
 
           <div className="register-link">
-            Chưa có tài khoản? <span onClick={() => navigate("/register")}>Đăng ký ngay</span>
+            Chưa có tài khoản?{" "}
+            <span onClick={() => navigate("/register")}>
+              Đăng ký ngay
+            </span>
           </div>
         </div>
       </div>

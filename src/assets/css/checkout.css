@@ -52,3 +52,13 @@
 .checkout-btn:active {
   transform: scale(0.98);
 }
+.input-error {
+  border: 1px solid red !important;
+}
+
+.error-text {
+  color: red;
+  font-size: 13px;
+  margin-top: -8px;
+  margin-bottom: 10px;
+}

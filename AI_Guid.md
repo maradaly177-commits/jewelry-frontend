@@ -1,0 +1,2 @@
+
+Tôi đang làm chức năng thanh toán cho chương trinh ứng dụng reactjs, C#asp.net. hãy mô tả cho tôi luồng thi công cụ thể và tạo ra bộ tài liệu để thi công theo. Đóng vai trò là senior nhiều năm kinh nghiệm  tạo tài liệu luồng thanh toán cho tôi sau đó từ tài liệu này tôi sẽ dùng AI thi công tiếp

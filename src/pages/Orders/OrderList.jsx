@@ -6,125 +6,94 @@ export default function OrderList() {
     const [orders, setOrders] = useState([]);
     const navigate = useNavigate();
 
-    const user = JSON.parse(
-        localStorage.getItem("user") || "{}"
-    );
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const userId = Number(user?.id);
 
-    const userId = user?.id || 1;
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const res = await axios.get(
+                    `https://localhost:7259/api/Order/user/${userId}`
+                );
 
-   useEffect(() => {
-    const fetchOrders = async () => {
-        try {
-            const res = await axios.get(
-                `https://localhost:7259/api/Order/user/${userId}`
-            );
+                const data = res.data?.data ?? res.data;
+                setOrders(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error(err);
+                setOrders([]);
+            }
+        };
 
-            setOrders(res.data || []);
-        } catch (err) {
-            console.error("Load orders error:", err);
-            setOrders([]);
+        if (userId > 0) fetchOrders();
+    }, [userId]);
+
+    // =========================
+    // STATUS
+    // =========================
+    const getStatus = (status) => {
+        switch (status) {
+            case "PENDING":
+                return { text: "Chờ xác nhận", color: "#fa8c16" };
+            case "CONFIRMED":
+                return { text: "Đã xác nhận", color: "#1677ff" };
+            case "SHIPPING":
+                return { text: "Đang giao", color: "#722ed1" };
+            case "DONE":
+                return { text: "Hoàn thành", color: "#52c41a" };
+            default:
+                return { text: status, color: "#999" };
         }
     };
 
-    fetchOrders();
-}, [userId]);
+    // =========================
+    // 💰 SHIPPING + TOTAL LOGIC (NEW)
+    // =========================
+    const getSubtotal = (order) => Number(order.totalAmount || 0);
 
-    const getStatusStyle = (status) => {
-        switch (status) {
-            case "PENDING":
-                return {
-                    color: "#ff9800",
-                    background: "#fff3e0"
-                };
-
-            case "CONFIRMED":
-                return {
-                    color: "#1976d2",
-                    background: "#e3f2fd"
-                };
-
-            case "SHIPPING":
-                return {
-                    color: "#9c27b0",
-                    background: "#f3e5f5"
-                };
-
-            case "DONE":
-                return {
-                    color: "#2e7d32",
-                    background: "#e8f5e9"
-                };
-
-            default:
-                return {
-                    color: "#555",
-                    background: "#f5f5f5"
-                };
-        }
+    const getShippingFee = (order) => {
+        const subtotal = getSubtotal(order);
+        return subtotal >= 1000000 ? 0 : 30000;
     };
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case "PENDING":
-                return "CHỜ XÁC NHẬN";
-
-            case "CONFIRMED":
-                return "ĐÃ XÁC NHẬN";
-
-            case "SHIPPING":
-                return "ĐANG GIAO";
-
-            case "DONE":
-                return "HOÀN THÀNH";
-
-            default:
-                return status;
-        }
+    const getFinalTotal = (order) => {
+        return getSubtotal(order) + getShippingFee(order);
     };
 
     return (
-        <div
-            style={{
-                maxWidth: "900px",
-                margin: "30px auto",
-                padding: "20px"
-            }}
-        >
-            <h2
-                style={{
-                    marginBottom: "25px"
-                }}
-            >
+        <div style={{
+            maxWidth: 950,
+            margin: "30px auto",
+            padding: 20,
+            fontFamily: "Arial"
+        }}>
+            <h2 style={{
+                marginBottom: 20,
+                fontSize: 22,
+                fontWeight: "bold"
+            }}>
                 📦 Đơn mua của tôi
             </h2>
 
             {orders.length === 0 ? (
-                <div
-                    style={{
-                        textAlign: "center",
-                        padding: "80px 20px",
-                        background: "#fff",
-                        border: "1px solid #eee",
-                        borderRadius: "12px"
-                    }}
-                >
-                    <div style={{ fontSize: 70 }}>
-                        📦
-                    </div>
-
-                    <h3>Bạn chưa có đơn hàng nào</h3>
+                <div style={{
+                    textAlign: "center",
+                    padding: 80,
+                    background: "#fff",
+                    borderRadius: 12,
+                    border: "1px solid #eee"
+                }}>
+                    <div style={{ fontSize: 60 }}>📦</div>
+                    <h3>Chưa có đơn hàng nào</h3>
 
                     <button
-                        onClick={() =>
-                            navigate("/products")
-                        }
+                        onClick={() => navigate("/products")}
                         style={{
-                            marginTop: 15,
-                            padding: "12px 24px",
-                            border: "none",
-                            borderRadius: 8,
+                            marginTop: 10,
+                            padding: "10px 20px",
                             background: "#000",
                             color: "#fff",
+                            border: "none",
+                            borderRadius: 8,
                             cursor: "pointer"
                         }}
                     >
@@ -133,194 +102,136 @@ export default function OrderList() {
                 </div>
             ) : (
                 orders.map((order) => {
-                    const productNames =
-                        order.productNames?.split("|") || [];
+                    const status = getStatus(order.status);
+                    const productNames = order.productNames?.split(", ") || [];
+                    const images = order.images?.split(", ") || [];
 
-                    const images =
-                        order.images?.split("|") || [];
+                    const subtotal = getSubtotal(order);
+                    const shipping = getShippingFee(order);
+                    const finalTotal = getFinalTotal(order);
 
                     return (
                         <div
                             key={order.id}
-                            onClick={() =>
-                                navigate(
-                                    `/orders/${order.id}`
-                                )
-                            }
+                            onClick={() => navigate(`/orders/${order.id}`)}
                             style={{
-                                border: "1px solid #eee",
-                                borderRadius: "12px",
-                                padding: "20px",
-                                marginBottom: "15px",
                                 background: "#fff",
-                                cursor: "pointer",
-                                boxShadow:
-                                    "0 2px 8px rgba(0,0,0,0.05)",
-                                transition: "0.2s"
+                                border: "1px solid #eee",
+                                borderRadius: 14,
+                                padding: 16,
+                                marginBottom: 14,
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                                cursor: "pointer"
                             }}
                         >
-                            {/* HEADER */}
-                            <div
-                                style={{
-                                    display: "flex",
-                                    justifyContent:
-                                        "space-between",
-                                    alignItems: "center",
-                                    marginBottom: 15
-                                }}
-                            >
-                                <h3
-                                    style={{
-                                        margin: 0
-                                    }}
-                                >
-                                    Đơn #{order.id}
-                                </h3>
 
-                                <span
-                                    style={{
-                                        padding:
-                                            "6px 12px",
-                                        borderRadius:
-                                            "20px",
-                                        fontSize: 12,
-                                        fontWeight:
-                                            "bold",
-                                        ...getStatusStyle(
-                                            order.status
-                                        )
-                                    }}
-                                >
-                                    {getStatusText(
-                                        order.status
-                                    )}
+                            {/* HEADER */}
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                marginBottom: 10
+                            }}>
+                                <div style={{ fontWeight: "bold" }}>
+                                    🧾 Đơn #{order.id}
+                                </div>
+
+                                <span style={{
+                                    fontSize: 12,
+                                    fontWeight: "bold",
+                                    color: status.color
+                                }}>
+                                    {status.text}
                                 </span>
                             </div>
 
-                            {/* PRODUCT */}
-                            <div
-                                style={{
-                                    display: "flex",
-                                    gap: 15,
-                                    marginBottom: 15
-                                }}
-                            >
-                                {images.length > 0 && (
-                                    <img
-                                        src={`/images/${images[0]}`}
-                                        alt={
-                                            productNames[0]
-                                        }
-                                        width="90"
-                                        height="90"
-                                        style={{
-                                            objectFit:
-                                                "cover",
-                                            borderRadius:
-                                                "8px",
-                                            border:
-                                                "1px solid #eee"
-                                        }}
-                                        onError={(
-                                            e
-                                        ) => {
-                                            e.target.src =
-                                                "/images/no-image.jpg";
-                                        }}
-                                    />
-                                )}
+                            {/* DATE */}
+                            <div style={{
+                                fontSize: 12,
+                                color: "#888",
+                                marginBottom: 10
+                            }}>
+                                📅 {new Date(order.orderDate).toLocaleString("vi-VN")}
+                            </div>
 
-                                <div>
-                                    <div
-                                        style={{
-                                            fontWeight:
-                                                "bold",
-                                            fontSize: 15,
-                                            marginBottom:
-                                                6
-                                        }}
-                                    >
-                                        {
-                                            productNames[0]
-                                        }
+                            {/* PRODUCT */}
+                            <div style={{
+                                display: "flex",
+                                gap: 12,
+                                background: "#fafafa",
+                                padding: 10,
+                                borderRadius: 10,
+                                marginBottom: 10
+                            }}>
+                                <img
+                                    src={
+                                        images[0]
+                                            ? `/images/${images[0]}`
+                                            : "/images/no-image.jpg"
+                                    }
+                                    alt=""
+                                    style={{
+                                        width: 70,
+                                        height: 70,
+                                        borderRadius: 8,
+                                        objectFit: "cover"
+                                    }}
+                                />
+
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: "bold" }}>
+                                        {productNames[0]}
                                     </div>
 
-                                    {order.itemCount >
-                                        1 && (
-                                        <div
-                                            style={{
-                                                color:
-                                                    "#666"
-                                            }}
-                                        >
-                                            +
-                                            {order.itemCount -
-                                                1}{" "}
-                                            sản phẩm khác
+                                    {order.itemCount > 1 && (
+                                        <div style={{
+                                            fontSize: 12,
+                                            color: "#888",
+                                            marginTop: 5
+                                        }}>
+                                            +{order.itemCount - 1} sản phẩm khác
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* TOTAL */}
-                            <div
-                                style={{
-                                    marginBottom: 10
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        color:
-                                            "#666",
-                                        fontSize:
-                                            13
-                                    }}
-                                >
-                                    Tổng thanh toán
+                            {/* 💰 TOTAL DETAIL (NEW UI) */}
+                            <div style={{
+                                borderTop: "1px solid #eee",
+                                paddingTop: 10
+                            }}>
+                                <div style={{ fontSize: 13, color: "#666" }}>
+                                    Tạm tính: {subtotal.toLocaleString("vi-VN")} ₫
                                 </div>
 
-                                <div
-                                    style={{
-                                        color:
-                                            "#ee4d2d",
-                                        fontWeight:
-                                            "bold",
-                                        fontSize:
-                                            24
-                                    }}
-                                >
-                                    {Number(
-                                        order.totalAmount ||
-                                            0
-                                    ).toLocaleString(
-                                        "vi-VN"
-                                    )}
-                                    ₫
+                                <div style={{ fontSize: 13, color: "#666" }}>
+                                    Phí vận chuyển: {
+                                        shipping === 0
+                                            ? "Miễn phí"
+                                            : shipping.toLocaleString("vi-VN") + " ₫"
+                                    }
+                                </div>
+
+                                <div style={{
+                                    fontSize: 16,
+                                    fontWeight: "bold",
+                                    color: "#ee4d2d",
+                                    marginTop: 5
+                                }}>
+                                    Tổng thanh toán: {finalTotal.toLocaleString("vi-VN")} ₫
                                 </div>
                             </div>
 
-                            <div
-                                style={{
-                                    color: "#666",
-                                    marginBottom: 5
-                                }}
-                            >
-                                🛍 {order.itemCount} sản phẩm
+                            {/* FOOTER */}
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                marginTop: 10
+                            }}>
+                                <div style={{ fontSize: 12, color: "#666" }}>
+                                    📦 {order.itemCount} sản phẩm
+                                </div>
                             </div>
 
-                            <div
-                                style={{
-                                    color: "#888",
-                                    fontSize: 13
-                                }}
-                            >
-                                📅{" "}
-                                {new Date(
-                                    order.orderDate
-                                ).toLocaleString(
-                                    "vi-VN"
-                                )}
-                            </div>
                         </div>
                     );
                 })

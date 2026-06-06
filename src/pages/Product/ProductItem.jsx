@@ -6,7 +6,12 @@ const ProductItem = ({ product, imageMap, fallbackImages, index }) => {
     // =========================
     // SAFE ID
     // =========================
-    const currentId = product?.productId || product?.id || product?.Id;
+   const currentId = Number(
+    product?.productId ??
+    product?.productID ??
+    product?.id ??
+    product?.Id
+);
 
     // =========================
     // SAFE NAME
@@ -28,10 +33,11 @@ const ProductItem = ({ product, imageMap, fallbackImages, index }) => {
     // =========================
     // SAFE IMAGE
     // =========================
-    const img =
-        product?.image && imageMap[product.image]
-            ? imageMap[product.image]
-            : fallbackImages[index % fallbackImages.length];
+    const imgKey = product?.image;
+
+const img =
+    imageMap[imgKey] ||
+    fallbackImages[index % fallbackImages.length];
 
     return (
         <div className="item-card">

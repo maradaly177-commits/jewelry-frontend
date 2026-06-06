@@ -5,7 +5,9 @@ import "../../assets/css/ProductList.css";
 
 import ProductItem from "./ProductItem";
 
-// Images
+// =========================
+// IMAGES
+// =========================
 import p1Image from "../../assets/images/P1.jpg";
 import p2Image from "../../assets/images/P2.jpg";
 import p3Image from "../../assets/images/P7.jpg";
@@ -22,7 +24,9 @@ import p13Image from "../../assets/images/P19.jpg";
 import p14Image from "../../assets/images/P20.jpg";
 import p15Image from "../../assets/images/P21.webp";
 
-// Image mapping
+// =========================
+// IMAGE MAP
+// =========================
 const imageMap = {
     "P1.jpg": p1Image,
     "P2.jpg": p2Image,
@@ -42,8 +46,23 @@ const imageMap = {
 };
 
 export default function ProductList() {
-    const [products, setProducts] = useState([]);
+
     const navigate = useNavigate();
+
+    // =========================
+    // STATE
+    // =========================
+    const [products, setProducts] = useState([]);
+    const [search, setSearch] = useState("");
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
+    const [sort, setSort] = useState("");
+
+    const fallbackImages = [
+        p1Image, p2Image, p3Image, p4Image, p5Image,
+        p6Image, p7Image, p8Image, p9Image, p10Image,
+        p11Image, p12Image, p13Image, p14Image, p15Image
+    ];
 
     // =========================
     // LOAD PRODUCTS
@@ -51,66 +70,145 @@ export default function ProductList() {
     useEffect(() => {
         axios.get("https://localhost:7259/api/Product")
             .then(res => {
-                console.log("PRODUCT API:", res.data); // debug
-                setProducts(res.data);
+                const list = res.data?.data?.data || [];
+                setProducts(Array.isArray(list) ? list : []);
             })
-            .catch(err => console.error("Lỗi lấy sản phẩm:", err));
+            .catch(err => console.error("LOAD PRODUCT ERROR:", err));
     }, []);
+
+    // =========================
+    // FILTER + SEARCH + SORT
+    // =========================
+     const filteredProducts = products
+    .filter((p) => {
+
+        const name = (
+            p.productName ||
+            p.ProductName ||
+            p.name ||
+            ""
+        ).toString().toLowerCase();
+
+        const price = Number(
+            p.UnitPrice ?? p.unitPrice ?? p.Price ?? p.price ?? 0
+        );
+
+        const searchText = search.toLowerCase().trim();
+
+        const matchSearch =
+            searchText === "" || name.includes(searchText);
+
+        const min = minPrice ? Number(minPrice) : null;
+        const max = maxPrice ? Number(maxPrice) : null;
+
+        const matchMin = min ? price >= min : true;
+        const matchMax = max ? price <= max : true;
+
+        return matchSearch && matchMin && matchMax;
+    })
+    .sort((a, b) => {
+
+        const priceA = Number(a.UnitPrice ?? a.unitPrice ?? 0);
+        const priceB = Number(b.UnitPrice ?? b.unitPrice ?? 0);
+
+        if (sort === "asc") return priceA - priceB;
+        if (sort === "desc") return priceB - priceA;
+
+        return 0;
+    });
 
     // =========================
     // ADD TO CART
     // =========================
     const addToCart = async (product) => {
         try {
-            const userData = JSON.parse(localStorage.getItem("user") || "{}");
-            const userId = userData.id || 1;
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            const userId = user.id || 1;
 
             await axios.post("https://localhost:7259/api/Cart/add", {
-                UserId: userId,
-                ProductId: product.id ?? product.Id,
-                Quantity: 1
+                userId,
+                productId: product.id ?? product.Id,
+                quantity: 1
             });
 
             alert(`Đã thêm "${product.productName ?? product.ProductName}" vào giỏ hàng!`);
-
         } catch (err) {
-            console.error("Lỗi thêm vào giỏ:", err);
+            console.error("ADD CART ERROR:", err);
             alert("Không thể thêm vào giỏ hàng.");
         }
     };
 
-    // fallback images
-    const fallbackImages = [
-        p1Image, p2Image, p3Image, p4Image, p5Image,
-        p6Image, p7Image, p8Image, p9Image, p10Image,
-        p11Image, p12Image, p13Image, p14Image, p15Image
-    ];
-
+    // =========================
+    // RENDER
+    // =========================
     return (
         <div className="bvlgari-style">
 
-            {/* NAV */}
+            {/* ================= NAV ================= */}
             <nav className="main-nav">
+
                 <div className="brand-center">
-                    <h1 className="logo" onClick={() => navigate("/")}>
+
+                    <h1
+                        className="logo"
+                        onClick={() => navigate("/")}
+                    >
                         M V L D A R I
                     </h1>
+
+                    {/* SEARCH */}
+                    <input
+                        className="nav-search"
+                        type="text"
+                        placeholder="Search jewelry..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+
+                    {/* FILTER */}
+                    <div className="filter-bar">
+
+                        <input
+                            className="filter-input"
+                            placeholder="Min price"
+                            value={minPrice}
+                            onChange={(e) => setMinPrice(e.target.value)}
+                        />
+
+                        <input
+                            className="filter-input"
+                            placeholder="Max price"
+                            value={maxPrice}
+                            onChange={(e) => setMaxPrice(e.target.value)}
+                        />
+
+                        <select
+                            className="filter-select"
+                            value={sort}
+                            onChange={(e) => setSort(e.target.value)}
+                        >
+                            <option value="">Sort price</option>
+                            <option value="asc">Giá tăng</option>
+                            <option value="desc">Giá giảm</option>
+                        </select>
+
+                    </div>
+
                 </div>
 
                 <ul className="nav-menu">
                     <li>TRANG SỨC</li>
                     <li>ĐỒNG HỒ</li>
-                    <li
-                        onClick={() => navigate("/cart")}
-                        style={{ fontWeight: "bold", color: "#b68d40", cursor: "pointer" }}
-                    >
+                    <li onClick={() => navigate("/cart")}>
                         GIỎ HÀNG
                     </li>
                 </ul>
+
             </nav>
 
-            {/* HERO */}
+            {/* ================= HERO ================= */}
             <section className="video-hero">
+
                 <div className="video-wrapper">
                     <video autoPlay loop muted playsInline className="bg-video">
                         <source src="https://media2.bulgari.com/video/upload/f_auto,q_auto/v1760090043/homepage/serpenti/magnificent-icons/JW-25_MI_Bzero1_BB_Serpenti_1920x1080.mp4" />
@@ -119,23 +217,31 @@ export default function ProductList() {
 
                 <div className="video-overlay">
                     <div className="overlay-content">
-                        <h2 className="fade-in-text">INFINITE TRANSFORMATIONS</h2>
-                        <button className="btn-explore">BỘ SƯU TẬP MỚI</button>
+                        <h2 className="fade-in-text">
+                            INFINITE TRANSFORMATIONS
+                        </h2>
+
+                        <button className="btn-explore">
+                            BỘ SƯU TẬP MỚI
+                        </button>
                     </div>
                 </div>
+
             </section>
 
-            {/* PRODUCT GRID */}
+            {/* ================= PRODUCTS ================= */}
             <div className="product-listing">
+
                 <div className="listing-header">
                     <h3>Trang Sức Biểu Tượng</h3>
                 </div>
 
                 <div className="luxury-grid">
-                    {products.length > 0 ? (
-                        products.map((p, index) => (
+
+                    {filteredProducts.length > 0 ? (
+                        filteredProducts.map((p, index) => (
                             <ProductItem
-                                key={p.id ?? p.Id}   // ✅ FIX KEY
+                                key={p.id ?? p.Id}
                                 product={p}
                                 index={index}
                                 imageMap={imageMap}
@@ -145,11 +251,14 @@ export default function ProductList() {
                         ))
                     ) : (
                         <div className="loading-state">
-                            Đang tải tuyệt tác trang sức...
+                            Không tìm thấy sản phẩm
                         </div>
                     )}
+
                 </div>
+
             </div>
+
         </div>
     );
 }

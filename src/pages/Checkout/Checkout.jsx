@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../../assets/css/checkout.css";
-import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
     const [address, setAddress] = useState("");
     const [phone, setPhone] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState("COD"); // 🔥 THÊM
+    const [paymentMethod, setPaymentMethod] = useState("COD");
     const [loading, setLoading] = useState(false);
+
+    const [errors, setErrors] = useState({
+        address: "",
+        phone: ""
+    });
 
     const navigate = useNavigate();
 
@@ -18,62 +22,65 @@ export default function Checkout() {
 
     const handleCheckout = async () => {
 
-        // =====================
-        // VALIDATION
-        // =====================
-        if (!address.trim()) {
-            toast.warning("⚠️ Vui lòng nhập địa chỉ giao hàng");
-            return;
-        }
+        let newErrors = {
+            address: "",
+            phone: ""
+        };
 
-        if (address.trim().length < 10) {
-            toast.warning("⚠️ Địa chỉ quá ngắn");
-            return;
+        // ================= VALIDATION =================
+        if (!address.trim()) {
+            newErrors.address = "Vui lòng nhập địa chỉ";
+        } else if (address.trim().length < 10) {
+            newErrors.address = "Địa chỉ quá ngắn (>= 10 ký tự)";
         }
 
         if (!phone.trim()) {
-            toast.warning("⚠️ Vui lòng nhập số điện thoại");
-            return;
+            newErrors.phone = "Vui lòng nhập số điện thoại";
+        } else if (!validatePhone(phone.trim())) {
+            newErrors.phone = "Số điện thoại không hợp lệ";
         }
 
-        if (!validatePhone(phone)) {
-            toast.warning("⚠️ Số điện thoại không hợp lệ");
-            return;
-        }
+        setErrors(newErrors);
+
+        if (newErrors.address || newErrors.phone) return;
 
         try {
             setLoading(true);
 
-            const user = JSON.parse(localStorage.getItem("user"));
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
 
             const res = await axios.post(
                 "https://localhost:7259/api/Order/checkout",
                 {
                     userId: user?.id || 1,
-                    shippingAddress: address,
-                    phone: phone,
-                    paymentMethod: paymentMethod // 🔥 QUAN TRỌNG
+                    shippingAddress: address.trim(),
+                    phone: phone.trim()
+                    
                 }
             );
 
-            const orderId = res.data.orderId;
+            console.log("CHECKOUT RESPONSE:", res.data);
 
-            toast.success("🎉 Đặt hàng thành công!");
+            // ================= FIX ORDER ID =================
+            const orderId =
+                res.data?.data?.orderId ||
+                res.data?.orderId;
 
-            // =====================
-            // FLOW THỰC TẾ
-            // =====================
-            setTimeout(() => {
-                navigate(`/order-success/${orderId}`);
-            }, 800);
+            if (!orderId) {
+                alert("❌ Không lấy được orderId từ server");
+                return;
+            }
+
+            // ================= NAVIGATE =================
+            navigate(`/order-success/${orderId}`);
 
         } catch (err) {
-            console.error(err);
+            console.error("CHECKOUT ERROR:", err);
 
-            toast.error(
-                err.response?.data?.message || "❌ Thanh toán thất bại"
+            alert(
+                err.response?.data?.message ||
+                "❌ Thanh toán thất bại (kiểm tra backend hoặc giỏ hàng)"
             );
-
         } finally {
             setLoading(false);
         }
@@ -90,6 +97,9 @@ export default function Checkout() {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
             />
+            {errors.address && (
+                <p className="error-text">{errors.address}</p>
+            )}
 
             {/* PHONE */}
             <input
@@ -99,8 +109,11 @@ export default function Checkout() {
                 onChange={(e) => setPhone(e.target.value)}
                 maxLength={10}
             />
+            {errors.phone && (
+                <p className="error-text">{errors.phone}</p>
+            )}
 
-            {/* PAYMENT METHOD 🔥 */}
+            {/* PAYMENT */}
             <select
                 className="checkout-input"
                 value={paymentMethod}
